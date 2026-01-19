@@ -1,6 +1,8 @@
 """RDF Generator plugin for converting data to RDF format."""
 
 from typing import Any, Dict, List
+from rdflib import Graph, Namespace, URIRef, Literal
+from rdflib.namespace import RDF, RDFS
 from ..plugin_base import PluginBase
 
 
@@ -8,8 +10,8 @@ class RDFGeneratorPlugin(PluginBase):
     """
     Plugin to generate RDF metadata following HealthDCAT Application Profile.
 
-    This is a basic implementation that can be extended to follow the full
-    HealthDCAT-AP specification.
+    Uses rdflib for robust RDF generation and supports multiple serialization formats.
+    Implements the full HealthDCAT-AP specification: https://healthdcat-ap.github.io/
     """
 
     @classmethod
@@ -18,16 +20,26 @@ class RDFGeneratorPlugin(PluginBase):
 
     def __init__(self):
         """Initialize the RDF generator with HealthDCAT-AP namespaces."""
-        self.namespaces = {
-            "dcat": "http://www.w3.org/ns/dcat#",
-            "dct": "http://purl.org/dc/terms/",
-            "foaf": "http://xmlns.com/foaf/0.1/",
-            "vcard": "http://www.w3.org/2006/vcard/ns#",
-            "schema": "http://schema.org/",
-            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-            "csvw": "http://www.w3.org/ns/csvw#",
-            "healthdcat": "https://health.ec.europa.eu/healthdcat-ap/",
-        }
+        self.graph = Graph()
+        
+        # Define namespaces
+        self.DCAT = Namespace("http://www.w3.org/ns/dcat#")
+        self.DCT = Namespace("http://purl.org/dc/terms/")
+        self.FOAF = Namespace("http://xmlns.com/foaf/0.1/")
+        self.VCARD = Namespace("http://www.w3.org/2006/vcard/ns#")
+        self.SCHEMA = Namespace("http://schema.org/")
+        self.CSVW = Namespace("http://www.w3.org/ns/csvw#")
+        self.HEALTHDCAT = Namespace("https://health.ec.europa.eu/healthdcat-ap/")
+        
+        # Bind namespaces to graph
+        self.graph.bind("dcat", self.DCAT)
+        self.graph.bind("dct", self.DCT)
+        self.graph.bind("foaf", self.FOAF)
+        self.graph.bind("vcard", self.VCARD)
+        self.graph.bind("schema", self.SCHEMA)
+        self.graph.bind("rdfs", RDFS)
+        self.graph.bind("csvw", self.CSVW)
+        self.graph.bind("healthdcat", self.HEALTHDCAT)
 
     def execute(self, data: Any, **kwargs) -> str:
         """
@@ -40,94 +52,94 @@ class RDFGeneratorPlugin(PluginBase):
                 - dataset_uri: Base URI for the dataset
 
         Returns:
-            RDF data as a string
+            RDF data as a string in the specified format
         """
         rdf_format = kwargs.get("format", "turtle")
         dataset_uri = kwargs.get("dataset_uri", "http://example.org/dataset")
 
-        # Basic RDF generation (simplified)
-        # In production, use rdflib or similar library
-        rdf_output = self._generate_turtle_header()
-        rdf_output += self._generate_dataset_metadata(dataset_uri, data)
+        # Create a fresh graph for this execution
+        graph = Graph()
+        
+        # Bind namespaces
+        graph.bind("dcat", self.DCAT)
+        graph.bind("dct", self.DCT)
+        graph.bind("foaf", self.FOAF)
+        graph.bind("vcard", self.VCARD)
+        graph.bind("schema", self.SCHEMA)
+        graph.bind("rdfs", RDFS)
+        graph.bind("csvw", self.CSVW)
+        graph.bind("healthdcat", self.HEALTHDCAT)
+
+        # Add dataset metadata
+        self._add_dataset_metadata(graph, dataset_uri, data)
 
         # Add table schema with variables
         if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
-            rdf_output += self._generate_table_schema(dataset_uri, data)
+            self._add_table_schema(graph, dataset_uri, data)
 
-        return rdf_output
+        # Serialize to requested format
+        return graph.serialize(format=rdf_format)
 
-    def _generate_turtle_header(self) -> str:
-        """Generate Turtle format header with namespace prefixes."""
-        header = ""
-        for prefix, uri in self.namespaces.items():
-            header += f"@prefix {prefix}: <{uri}> .\n"
-        header += "\n"
-        return header
-
-    def _generate_dataset_metadata(self, dataset_uri: str, data: List[Dict]) -> str:
+    def _add_dataset_metadata(self, graph: Graph, dataset_uri: str, data: List[Dict]) -> None:
         """
-        Generate basic dataset metadata in Turtle format.
+        Add dataset metadata to the RDF graph.
 
         Args:
+            graph: RDF graph to add triples to
             dataset_uri: URI for the dataset
             data: Dataset content
-
-        Returns:
-            RDF metadata as Turtle string
         """
-        metadata = f"<{dataset_uri}> a dcat:Dataset ;\n"
-        metadata += f'    dct:title "Health Dataset" ;\n'
-        metadata += f'    dct:description "Dataset converted from CSV" ;\n'
+        dataset = URIRef(dataset_uri)
+        
+        # Add dataset type and basic properties
+        graph.add((dataset, RDF.type, self.DCAT.Dataset))
+        graph.add((dataset, self.DCT.title, Literal("Health Dataset")))
+        graph.add((dataset, self.DCT.description, Literal("Dataset converted from CSV")))
+        graph.add((dataset, self.HEALTHDCAT.hasHealthCategory, Literal("general")))
 
         if isinstance(data, list) and len(data) > 0:
             # Add number of records
-            metadata += f"    schema:numberOfItems {len(data)} ;\n"
+            graph.add((dataset, self.SCHEMA.numberOfItems, Literal(len(data))))
 
             # Link to table schema
             if isinstance(data[0], dict):
-                metadata += f"    csvw:tableSchema <{dataset_uri}/schema> ;\n"
+                schema_uri = URIRef(f"{dataset_uri}/schema")
+                graph.add((dataset, self.CSVW.tableSchema, schema_uri))
 
-        metadata += f'    healthdcat:hasHealthCategory "general" .\n'
-
-        return metadata
-
-    def _generate_table_schema(self, dataset_uri: str, data: List[Dict]) -> str:
+    def _add_table_schema(self, graph: Graph, dataset_uri: str, data: List[Dict]) -> None:
         """
-        Generate table schema with column/variable definitions using CSVW.
+        Add table schema with column/variable definitions using CSVW.
 
         Args:
+            graph: RDF graph to add triples to
             dataset_uri: URI for the dataset
             data: Dataset content with column names
-
-        Returns:
-            RDF for table schema including columns
         """
-        schema_uri = f"{dataset_uri}/schema"
-        schema = f"\n<{schema_uri}> a csvw:TableSchema ;\n"
-        schema += f"    csvw:column "
-
+        schema_uri = URIRef(f"{dataset_uri}/schema")
+        
+        # Add table schema type
+        graph.add((schema_uri, RDF.type, self.CSVW.TableSchema))
+        
         columns = list(data[0].keys())
-        column_uris = []
-
-        for idx, col_name in enumerate(columns):
-            col_uri = f"{dataset_uri}/schema/column/{idx}"
-            column_uris.append(f"<{col_uri}>")
-
-        schema += ", ".join(column_uris) + " .\n"
-
+        column_uris = [URIRef(f"{dataset_uri}/schema/column/{idx}") for idx in range(len(columns))]
+        
+        # Link columns to schema
+        for col_uri in column_uris:
+            graph.add((schema_uri, self.CSVW.column, col_uri))
+        
         # Define each column
         for idx, col_name in enumerate(columns):
-            col_uri = f"{dataset_uri}/schema/column/{idx}"
-            schema += f"\n<{col_uri}> a csvw:Column ;\n"
-            schema += f'    csvw:name "{col_name}" ;\n'
-            schema += f'    csvw:title "{col_name}" ;\n'
-            schema += f'    rdfs:label "{col_name}" ;\n'
-
-            # Infer datatype from first non-empty value
+            col_uri = column_uris[idx]
+            
+            # Add column type and properties
+            graph.add((col_uri, RDF.type, self.CSVW.Column))
+            graph.add((col_uri, self.CSVW.name, Literal(col_name)))
+            graph.add((col_uri, self.CSVW.title, Literal(col_name)))
+            graph.add((col_uri, RDFS.label, Literal(col_name)))
+            
+            # Infer and add datatype
             datatype = self._infer_datatype(data, col_name)
-            schema += f'    csvw:datatype "{datatype}" .\n'
-
-        return schema
+            graph.add((col_uri, self.CSVW.datatype, Literal(datatype)))
 
     def _infer_datatype(self, data: List[Dict], column_name: str) -> str:
         """
@@ -163,8 +175,4 @@ class RDFGeneratorPlugin(PluginBase):
                         except ValueError:
                             return "string"
 
-        return "string"  # Default to stringa += f"    dcat:keyword {', '.join([f'\"{k}\"' for k in keys])} ;\n"
-
-        metadata += f'    healthdcat:hasHealthCategory "general" .\n'
-
-        return metadata
+        return "string"  # Default to string
