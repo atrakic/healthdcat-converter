@@ -1,5 +1,7 @@
 # HealthDCAT-AP Converter
 
+[![CI](https://github.com/atrakic/healthdcat-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/atrakic/healthdcat-converter/actions/workflows/ci.yml)
+
 > ⚠️ **Note:** This is an unofficial package and is not endorsed by or affiliated with the official HealthDCAT-AP project.
 
 A Python package to read datasets and create metadata following the **HealthDCAT Application Profile** [HealthDCAT-AP](https://www.healthinformationportal.eu/healthdcat-ap).
