@@ -40,5 +40,28 @@ def test_converter_with_missing_file():
         converter.convert()
 
 
-# Integration test would require an actual CSV file
-# This is just a structure - you can expand with real test data
+def test_converter_integration_with_sample_csv():
+    """Integration test using the sample.csv file."""
+    sample_csv_path = Path(__file__).parent.parent / "data" / "sample.csv"
+
+    # Ensure the sample file exists
+    assert sample_csv_path.exists(), f"Sample CSV file not found at {sample_csv_path}"
+
+    # Initialize converter with the sample file
+    converter = CSVtoRDFConverter(str(sample_csv_path))
+
+    # Perform conversion with the sample data
+    rdf_output = converter.convert(
+        format="turtle",
+        dataset_uri="http://example.org/health/dataset/sample",
+        validate=True
+    )
+
+    # Verify data was loaded during conversion
+    assert converter.data is not None
+    assert len(converter.data) > 0
+
+    # Verify RDF output
+    assert rdf_output is not None
+    assert len(rdf_output) > 0
+    assert "@prefix" in rdf_output
