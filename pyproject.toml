@@ -1,5 +1,5 @@
 [project]
-name = "csv-healthdcat-converter"
+name = "healthdcat-converter"
 version = "0.1.0"
 description = "A Python package to convert CSV datasets to RDF format following the HealthDCAT Application Profile with plugin architecture"
 readme = "README.md"

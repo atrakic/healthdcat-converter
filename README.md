@@ -1,8 +1,8 @@
-# CSV to HealthDCAT-AP Converter
+# HealthDCAT-AP Converter
 
 > ⚠️ **Note:** This is an unofficial package and is not endorsed by or affiliated with the official HealthDCAT-AP project.
 
-A Python package to convert CSV datasets into RDF metadata following the **HealthDCAT Application Profile** [https://www.healthinformationportal.eu/healthdcat-ap](HealthDCAT-AP).
+A Python package to read datasets and create metadata following the **HealthDCAT Application Profile** [HealthDCAT-AP](https://www.healthinformationportal.eu/healthdcat-ap).
 
 ## Installation
 

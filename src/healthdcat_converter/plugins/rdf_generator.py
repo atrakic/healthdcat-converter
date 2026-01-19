@@ -21,7 +21,7 @@ class RDFGeneratorPlugin(PluginBase):
     def __init__(self):
         """Initialize the RDF generator with HealthDCAT-AP namespaces."""
         self.graph = Graph()
-        
+
         # Define namespaces
         self.DCAT = Namespace("http://www.w3.org/ns/dcat#")
         self.DCT = Namespace("http://purl.org/dc/terms/")
@@ -30,7 +30,7 @@ class RDFGeneratorPlugin(PluginBase):
         self.SCHEMA = Namespace("http://schema.org/")
         self.CSVW = Namespace("http://www.w3.org/ns/csvw#")
         self.HEALTHDCAT = Namespace("https://health.ec.europa.eu/healthdcat-ap/")
-        
+
         # Bind namespaces to graph
         self.graph.bind("dcat", self.DCAT)
         self.graph.bind("dct", self.DCT)
@@ -59,7 +59,7 @@ class RDFGeneratorPlugin(PluginBase):
 
         # Create a fresh graph for this execution
         graph = Graph()
-        
+
         # Bind namespaces
         graph.bind("dcat", self.DCAT)
         graph.bind("dct", self.DCT)
@@ -80,7 +80,9 @@ class RDFGeneratorPlugin(PluginBase):
         # Serialize to requested format
         return graph.serialize(format=rdf_format)
 
-    def _add_dataset_metadata(self, graph: Graph, dataset_uri: str, data: List[Dict]) -> None:
+    def _add_dataset_metadata(
+        self, graph: Graph, dataset_uri: str, data: List[Dict]
+    ) -> None:
         """
         Add dataset metadata to the RDF graph.
 
@@ -90,11 +92,13 @@ class RDFGeneratorPlugin(PluginBase):
             data: Dataset content
         """
         dataset = URIRef(dataset_uri)
-        
+
         # Add dataset type and basic properties
         graph.add((dataset, RDF.type, self.DCAT.Dataset))
         graph.add((dataset, self.DCT.title, Literal("Health Dataset")))
-        graph.add((dataset, self.DCT.description, Literal("Dataset converted from CSV")))
+        graph.add(
+            (dataset, self.DCT.description, Literal("Dataset converted from CSV"))
+        )
         graph.add((dataset, self.HEALTHDCAT.hasHealthCategory, Literal("general")))
 
         if isinstance(data, list) and len(data) > 0:
@@ -106,7 +110,9 @@ class RDFGeneratorPlugin(PluginBase):
                 schema_uri = URIRef(f"{dataset_uri}/schema")
                 graph.add((dataset, self.CSVW.tableSchema, schema_uri))
 
-    def _add_table_schema(self, graph: Graph, dataset_uri: str, data: List[Dict]) -> None:
+    def _add_table_schema(
+        self, graph: Graph, dataset_uri: str, data: List[Dict]
+    ) -> None:
         """
         Add table schema with column/variable definitions using CSVW.
 
@@ -116,27 +122,29 @@ class RDFGeneratorPlugin(PluginBase):
             data: Dataset content with column names
         """
         schema_uri = URIRef(f"{dataset_uri}/schema")
-        
+
         # Add table schema type
         graph.add((schema_uri, RDF.type, self.CSVW.TableSchema))
-        
+
         columns = list(data[0].keys())
-        column_uris = [URIRef(f"{dataset_uri}/schema/column/{idx}") for idx in range(len(columns))]
-        
+        column_uris = [
+            URIRef(f"{dataset_uri}/schema/column/{idx}") for idx in range(len(columns))
+        ]
+
         # Link columns to schema
         for col_uri in column_uris:
             graph.add((schema_uri, self.CSVW.column, col_uri))
-        
+
         # Define each column
         for idx, col_name in enumerate(columns):
             col_uri = column_uris[idx]
-            
+
             # Add column type and properties
             graph.add((col_uri, RDF.type, self.CSVW.Column))
             graph.add((col_uri, self.CSVW.name, Literal(col_name)))
             graph.add((col_uri, self.CSVW.title, Literal(col_name)))
             graph.add((col_uri, RDFS.label, Literal(col_name)))
-            
+
             # Infer and add datatype
             datatype = self._infer_datatype(data, col_name)
             graph.add((col_uri, self.CSVW.datatype, Literal(datatype)))

@@ -21,10 +21,10 @@ def main():
     converter = CSVtoRDFConverter(str(csv_file))
 
     # List all available plugins
-    #print("Available plugins:")
-    #for plugin_name in converter.list_available_plugins():
+    # print("Available plugins:")
+    # for plugin_name in converter.list_available_plugins():
     #    print(f"  - {plugin_name}")
-    #print()
+    # print()
 
     # Convert CSV to RDF format
     try:
