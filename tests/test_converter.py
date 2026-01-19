@@ -54,7 +54,7 @@ def test_converter_integration_with_sample_csv():
     rdf_output = converter.convert(
         format="turtle",
         dataset_uri="http://example.org/health/dataset/sample",
-        validate=True
+        validate=True,
     )
 
     # Verify data was loaded during conversion
