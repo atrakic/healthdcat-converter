@@ -1,0 +1,3 @@
+dataset_id,title,description,publisher,license,theme,keyword,modified,format,access_url
+health-001,Hospital Admissions 2024,Monthly hospital admissions by region,Ministry of Health,CC-BY-4.0,Healthcare,"hospital,admissions,regions",2025-01-10,CSV,https://example.org/health/admissions.csv
+health-002,Vaccination Coverage 2024,Vaccination coverage statistics by age group,Ministry of Health,CC-BY-4.0,Vaccination,"vaccines,coverage,age groups",2025-01-05,CSV,https://example.org/health/vaccination.csv

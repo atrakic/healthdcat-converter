@@ -1,0 +1,38 @@
+[project]
+name = "csv-healthdcat-converter"
+version = "0.1.0"
+description = "A Python package to convert CSV datasets to RDF format following the HealthDCAT Application Profile with plugin architecture"
+readme = "README.md"
+requires-python = ">=3.12"
+keywords = ["csv", "rdf", "turtle", "healthdcat", "metadata", "dcat", "health-data"]
+dependencies = [
+    "rdflib>=7.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pyright>=1.1.408",
+    "pytest>=9.0.2",
+    "ruff>=0.14.13",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.408",
+    "pytest>=9.0.2",
+    "ruff>=0.14.13",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
