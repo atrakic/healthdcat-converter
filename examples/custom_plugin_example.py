@@ -79,7 +79,7 @@ def main():
     )
 
     if filtered_data:
-        print(f"\nFiltered data sample (first row):")
+        print("\nFiltered data sample (first row):")
         print(f"  {filtered_data[0]}")
 
     # Generate RDF from filtered data
