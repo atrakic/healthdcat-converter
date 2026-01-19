@@ -43,8 +43,10 @@ class PluginLoader:
             # Get the path to the plugins directory
             if hasattr(plugins_module, "__path__"):
                 plugins_path = plugins_module.__path__
-            else:
+            elif plugins_module.__file__ is not None:
                 plugins_path = [Path(plugins_module.__file__).parent]
+            else:
+                return PluginBase.list_plugins()
 
             # Iterate through all modules in the plugins directory
             for _, module_name, is_pkg in pkgutil.iter_modules(plugins_path):
