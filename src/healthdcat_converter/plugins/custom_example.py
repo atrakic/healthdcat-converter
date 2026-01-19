@@ -12,7 +12,7 @@ The plugin will be automatically discovered and registered when the
 plugin loader runs.
 """
 
-from typing import Any, Dict
+from typing import Any
 from ..plugin_base import PluginBase
 
 

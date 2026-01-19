@@ -1,6 +1,6 @@
 """Validator plugin for validating CSV data."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 from ..plugin_base import PluginBase
 
 

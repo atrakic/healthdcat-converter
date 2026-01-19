@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .plugin_loader import PluginLoader
-from .plugin_base import PluginBase
 
 
 class CSVtoRDFConverter:

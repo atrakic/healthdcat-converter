@@ -1,6 +1,5 @@
 """Unit tests for individual plugins."""
 
-import pytest
 from healthdcat_converter.plugins.validator import ValidatorPlugin
 from healthdcat_converter.plugins.rdf_generator import RDFGeneratorPlugin
 

@@ -1,7 +1,6 @@
 """Unit tests for the plugin system."""
 
 import pytest
-from pathlib import Path
 from healthdcat_converter import PluginBase, PluginLoader
 
 
